@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flex Comp</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface-2: #1e1e1e;
+    --border: #2a2a2a;
+    --text: #f5f5f5;
+    --text-secondary: #999;
+    --accent: #6c5ce7;
+    --accent-glow: rgba(108, 92, 231, 0.3);
+    --green: #00d68f;
+    --green-dim: rgba(0, 214, 143, 0.15);
+    --yellow: #ffd43b;
+    --radius: 12px;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .header .logo {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .header p {
+    color: var(--text-secondary);
+    font-size: 16px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+
+  /* ============== ADMIN MODE ============== */
+  .admin-form label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    margin-top: 18px;
+  }
+  .admin-form label:first-child { margin-top: 0; }
+  .admin-form input, .admin-form select {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 16px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .admin-form input:focus, .admin-form select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .admin-form select {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  .admin-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .admin-row label { margin-top: 18px; }
+
+  /* Region pills in admin */
+  .admin-region-pills {
+    display: flex;
+    gap: 8px;
+  }
+  .admin-region-pills button {
+    flex: 1;
+    padding: 10px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .admin-region-pills button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* Generate button */
+  .generate-btn {
+    display: block;
+    width: 100%;
+    margin-top: 28px;
+    padding: 16px;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .generate-btn:hover { opacity: 0.9; }
+
+  /* Link output */
+  .link-output {
+    display: none;
+    margin-top: 20px;
+  }
+  .link-output.visible { display: block; }
+  .link-box {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .link-url {
+    flex: 1;
+    padding: 12px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--accent);
+    font-size: 13px;
+    font-family: monospace;
+    word-break: break-all;
+    overflow-y: auto;
+    max-height: 80px;
+  }
+  .copy-btn {
+    padding: 12px 20px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { border-color: var(--accent); }
+  .copy-btn.copied {
+    background: var(--green-dim);
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .preview-btn {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .preview-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  /* ============== CANDIDATE MODE ============== */
+
+  /* Offer hero */
+  .offer-hero {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .offer-hero .role-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .offer-hero .region-tag {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  /* Slider Section */
+  .slider-section { padding: 32px 28px; }
+  .split-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 28px;
+  }
+  .split-side { text-align: center; flex: 1; }
+  .split-side.right { text-align: right; }
+  .split-side.left { text-align: left; }
+  .split-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+  .split-pct {
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1.1;
+  }
+  .split-amount {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+  .split-side.right .split-pct { color: var(--accent); }
+
+  /* Slider track */
+  .slider-container { position: relative; padding: 8px 0; }
+  .slider-track {
+    position: relative;
+    height: 8px;
+    background: var(--surface-2);
+    border-radius: 4px;
+    overflow: visible;
+  }
+  .slider-fill-cash {
+    position: absolute; left: 0; top: 0; height: 100%;
+    background: var(--text);
+    border-radius: 4px 0 0 4px;
+    transition: width 0.05s;
+  }
+  .slider-fill-equity {
+    position: absolute; right: 0; top: 0; height: 100%;
+    background: var(--accent);
+    border-radius: 0 4px 4px 0;
+    transition: width 0.05s;
+  }
+  input[type="range"] {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 24px;
+    -webkit-appearance: none; appearance: none;
+    background: transparent; cursor: pointer; z-index: 2;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+    cursor: grab; margin-top: -10px;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+    cursor: grab;
+  }
+  input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; }
+  .slider-labels {
+    display: flex; justify-content: space-between;
+    margin-top: 8px; font-size: 12px; color: var(--text-secondary);
+  }
+
+  /* Bonus Badge */
+  .bonus-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 16px; padding: 8px 14px;
+    background: var(--green-dim);
+    border: 1px solid rgba(0, 214, 143, 0.3);
+    border-radius: 20px; font-size: 14px; font-weight: 600;
+    color: var(--green); opacity: 0; transform: translateY(4px);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .bonus-badge.visible { opacity: 1; transform: translateY(0); }
+  .bonus-badge .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green); animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* Equity Upside */
+  .scenarios { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .scenario {
+    background: var(--surface-2); border-radius: 8px;
+    padding: 16px; text-align: center;
+  }
+  .scenario-label {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+    color: var(--text-secondary); margin-bottom: 10px;
+  }
+  .scenario-value {
+    font-size: 20px; font-weight: 700; margin-bottom: 2px; letter-spacing: -0.5px;
+  }
+  .scenario:nth-child(2) .scenario-value { color: var(--accent); }
+  .scenario:nth-child(3) .scenario-value { color: var(--yellow); }
+  .scenario-sub { font-size: 11px; color: var(--text-secondary); }
+  .year-rows { margin-top: 6px; }
+  .year-row {
+    display: flex; justify-content: space-between;
+    font-size: 12px; padding: 3px 0; color: var(--text-secondary);
+  }
+  .year-row .yr-val { color: var(--text); font-weight: 500; }
+
+  /* Vesting Timeline */
+  .vesting-bar-container { margin-top: 8px; }
+  .vesting-bar {
+    display: flex; height: 32px; border-radius: 6px;
+    overflow: hidden; gap: 2px;
+  }
+  .vesting-segment {
+    flex: 1; background: var(--surface-2);
+    transition: background 0.3s; position: relative;
+  }
+  .vesting-segment.filled { background: var(--accent); }
+  .vesting-labels {
+    display: flex; justify-content: space-between;
+    margin-top: 8px; font-size: 12px; color: var(--text-secondary);
+  }
+  .vesting-info {
+    margin-top: 16px; display: flex;
+    justify-content: space-between; gap: 12px;
+  }
+  .vesting-stat {
+    background: var(--surface-2); border-radius: 8px;
+    padding: 14px; flex: 1; text-align: center;
+  }
+  .vesting-stat-label {
+    font-size: 11px; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+  }
+  .vesting-stat-value { font-size: 18px; font-weight: 700; }
+
+  /* Year selector */
+  .year-selector { display: flex; gap: 8px; margin-bottom: 16px; }
+  .year-btn {
+    padding: 6px 16px; border-radius: 20px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--text-secondary); font-size: 13px; font-weight: 500;
+    font-family: inherit; cursor: pointer; transition: all 0.2s;
+  }
+  .year-btn.active {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+  }
+
+  /* Summary Card */
+  .summary-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid rgba(108, 92, 231, 0.3);
+  }
+  .summary-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  }
+  .summary-item { padding: 12px 0; }
+  .summary-item.full {
+    grid-column: 1 / -1;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 20px;
+  }
+  .summary-label {
+    font-size: 12px; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+  }
+  .summary-value { font-size: 22px; font-weight: 700; }
+  .summary-value.large { font-size: 32px; color: var(--accent); }
+  .summary-detail {
+    font-size: 13px; color: var(--text-secondary); margin-top: 2px;
+  }
+
+  /* Legal sections */
+  .legal-section {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .legal-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-top: 20px;
+    margin-bottom: 6px;
+  }
+  .legal-section h3:first-child { margin-top: 0; }
+  .legal-section p { margin-bottom: 10px; }
+  .legal-section ul {
+    margin: 8px 0 12px 18px;
+    padding: 0;
+  }
+  .legal-section li {
+    margin-bottom: 6px;
+  }
+  .legal-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center; margin-top: 48px;
+    padding-top: 24px; border-top: 1px solid var(--border);
+  }
+  .footer p { font-size: 13px; color: var(--text-secondary); }
+  .footer .terms {
+    margin-top: 8px; font-size: 11px; color: #555;
+    max-width: 500px; margin-left: auto; margin-right: auto;
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .container { padding: 24px 16px 60px; }
+    .header h1 { font-size: 28px; }
+    .card { padding: 20px; }
+    .slider-section { padding: 24px 20px; }
+    .split-pct { font-size: 32px; }
+    .split-amount { font-size: 15px; }
+    .scenarios { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: 1fr; }
+    .summary-item.full { grid-column: 1; }
+    .vesting-info { flex-direction: column; }
+    .admin-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ============== ADMIN VIEW ============== -->
+  <div id="adminView">
+    <div class="header">
+      <div class="logo" id="adminLogo"></div>
+      <h1>Flex Comp</h1>
+      <p>Configure an offer, then generate a personalized link for the candidate.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Offer Details</div>
+      <div class="admin-form">
+        <label for="aName">Candidate First Name</label>
+        <input type="text" id="aName" placeholder="e.g. Jordan" />
+
+        <label for="aRole">Role Title</label>
+        <select id="aRole" onchange="onAdminRoleChange()"></select>
+        <div class="comp-range" id="adminCompRange" style="margin-top:8px;font-size:13px;color:var(--text-secondary)"></div>
+
+        <label>Region</label>
+        <div class="admin-region-pills" id="regionPills"></div>
+
+        <label for="aCash">Cash Salary (USD)</label>
+        <input type="text" id="aCash" value="200,000" inputmode="numeric" oninput="formatAdminCash(); updateAdminComputed()" />
+
+        <label for="aPPS">Preferred Price Per Share</label>
+        <input type="text" id="aPPS" placeholder="e.g. 10.00" inputmode="decimal" oninput="updateAdminComputed()" />
+
+        <label for="aTotalShares">Fully Diluted Shares</label>
+        <input type="text" id="aTotalShares" placeholder="e.g. 10,000,000" inputmode="numeric" oninput="formatAdminShares(); updateAdminComputed()" />
+
+        <div class="admin-row">
+          <div>
+            <label for="aEqPct">Equity Grant (% of company)</label>
+            <input type="text" id="aEqPct" value="0.35" inputmode="decimal" placeholder="e.g. 0.35" oninput="updateAdminComputed()" />
+          </div>
+          <div>
+            <label for="aEqShares">Shares</label>
+            <input type="text" id="aEqShares" readonly tabindex="-1" style="color:var(--text-secondary);cursor:default" />
+          </div>
+        </div>
+        <div id="adminGrantSummary" style="margin-top:10px;font-size:13px;color:var(--text-secondary);line-height:1.6"></div>
+
+        <button class="generate-btn" onclick="generateLink()">Generate Candidate Link</button>
+      </div>
+
+      <div class="link-output" id="linkOutput">
+        <div class="card-title" style="margin-bottom:12px;margin-top:8px">Shareable Link</div>
+        <div class="link-box">
+          <div class="link-url" id="linkUrl"></div>
+          <button class="copy-btn" id="copyBtn" onclick="copyLink()">Copy</button>
+        </div>
+        <button class="preview-btn" onclick="previewLink()">Preview as Candidate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== CANDIDATE VIEW ============== -->
+  <div id="candidateView" style="display:none">
+    <div class="header">
+      <div class="logo" id="candidateLogo"></div>
+      <h1 id="candidateHeading">Flex Comp</h1>
+      <p>Your comp, your choice. Drag the slider to pick the cash/equity mix that fits your life.</p>
+      <div class="offer-hero">
+        <div class="role-title" id="offerRole"></div>
+        <div class="region-tag" id="offerRegion"></div>
+      </div>
+    </div>
+
+    <!-- Slider -->
+    <div class="card slider-section">
+      <div class="split-display">
+        <div class="split-side left">
+          <div class="split-label">Cash</div>
+          <div class="split-pct" id="cashPct">80%</div>
+          <div class="split-amount" id="cashAmt">$160,000</div>
+        </div>
+        <div class="split-side right">
+          <div class="split-label">Equity</div>
+          <div class="split-pct" id="eqPct">20%</div>
+          <div class="split-amount" id="eqAmt">$40,000</div>
+        </div>
+      </div>
+      <div class="slider-container">
+        <div class="slider-track">
+          <div class="slider-fill-cash" id="fillCash"></div>
+          <div class="slider-fill-equity" id="fillEquity"></div>
+        </div>
+        <input type="range" id="slider" min="70" max="100" value="80" step="1" oninput="onSliderChange()" />
+      </div>
+      <div class="slider-labels" id="sliderLabels">
+        <span>30% salary trade / max equity</span>
+        <span>Full salary / base equity</span>
+      </div>
+      <div style="text-align:center">
+        <div class="bonus-badge" id="bonusBadge">
+          <span class="dot"></span>
+          <span id="bonusText">+$0 equity bonus</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Equity Upside -->
+    <div class="card">
+      <div class="card-title">Equity Upside Scenarios</div>
+      <div class="scenarios">
+        <div class="scenario">
+          <div class="scenario-label">Current (1x)</div>
+          <div class="scenario-value" id="s1x">$40,000</div>
+          <div class="scenario-sub">at current valuation</div>
+          <div class="year-rows" id="rows1x"></div>
+        </div>
+        <div class="scenario">
+          <div class="scenario-label">5x Growth</div>
+          <div class="scenario-value" id="s5x">$200,000</div>
+          <div class="scenario-sub" id="sub5x"></div>
+          <div class="year-rows" id="rows5x"></div>
+        </div>
+        <div class="scenario">
+          <div class="scenario-label">10x Growth</div>
+          <div class="scenario-value" id="s10x">$400,000</div>
+          <div class="scenario-sub" id="sub10x"></div>
+          <div class="year-rows" id="rows10x"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vesting Timeline -->
+    <div class="card">
+      <div class="card-title">Vesting Timeline</div>
+      <div class="year-selector" id="yearSelector"></div>
+      <div class="vesting-bar-container">
+        <div class="vesting-bar" id="vestingBar"></div>
+        <div class="vesting-labels" id="vestingLabels"></div>
+      </div>
+      <div class="vesting-info">
+        <div class="vesting-stat">
+          <div class="vesting-stat-label">Vested</div>
+          <div class="vesting-stat-value" id="vestedAmt">$10,000</div>
+        </div>
+        <div class="vesting-stat">
+          <div class="vesting-stat-label">Monthly</div>
+          <div class="vesting-stat-value" id="monthlyVest">$833</div>
+        </div>
+        <div class="vesting-stat">
+          <div class="vesting-stat-label">Remaining</div>
+          <div class="vesting-stat-value" id="remainingAmt">$150,000</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Card -->
+    <div class="card summary-card">
+      <div class="card-title">Your Comp Summary</div>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="summary-label">Annual Cash Salary</div>
+          <div class="summary-value" id="sumCash">$160,000</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Annual Equity Value</div>
+          <div class="summary-value" id="sumEquity">$40,000</div>
+          <div class="summary-detail" id="sumEqDetail">0.35% of company</div>
+        </div>
+        <div class="summary-item" id="ppsRow" style="display:none">
+          <div class="summary-label">Preferred Share Price</div>
+          <div class="summary-value" id="sumPPS" style="font-size:18px"></div>
+        </div>
+        <div class="summary-item" id="sharesRow" style="display:none">
+          <div class="summary-label" id="sharesLabel">ISO Shares</div>
+          <div class="summary-value" id="sumShares" style="font-size:18px"></div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Equity Bonus</div>
+          <div class="summary-value" id="sumBonus" style="color:var(--green)">$0</div>
+          <div class="summary-detail" id="sumBonusDetail"></div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label" id="vestingYearLabel">4-Year Equity Value</div>
+          <div class="summary-value" id="sum4yr">$160,000</div>
+        </div>
+        <div class="summary-item full">
+          <div class="summary-label">Total Annual Compensation</div>
+          <div class="summary-value large" id="sumTotal">$200,000</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="card">
+      <div class="card-title" id="howItWorksTitle">How Flex Comp Works</div>
+      <div id="howItWorksContent" style="font-size:14px;color:var(--text-secondary);line-height:1.7"></div>
+    </div>
+
+    <!-- Equity Details -->
+    <div class="card">
+      <div class="card-title">Equity Details</div>
+      <div class="legal-section" id="equityDetailsContent"></div>
+    </div>
+
+    <!-- Important Legal Information -->
+    <div class="card">
+      <div class="card-title">Important Information</div>
+      <div class="legal-section" id="legalContent"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p id="footerTitle"></p>
+      <p class="terms" id="footerTerms"></p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ============== CONFIG ==============
+  const CONFIG = {
+    // Company
+    companyName: 'Acme Inc.',
+    productName: 'Flex Comp',
+    website: 'https://example.com',
+
+    // Branding (CSS custom properties)
+    accentColor: '#6c5ce7',
+    accentGlow: 'rgba(108, 92, 231, 0.3)',
+
+    // Equity plan
+    planName: 'Equity Incentive Plan',
+    equityType: 'ISOs',  // ISOs or NSOs
+    vestingYears: 4,
+    vestingCliff: 'None',
+    postTermExerciseWindow: '10 years',
+
+    // Bonus
+    bonusThresholdPct: 20,
+    bonusRate: 0.10,
+
+    // Slider
+    sliderMin: 70,
+    sliderMax: 100,
+    sliderDefault: 80,
+
+    // Regions
+    regions: {
+      us:   { label: 'US',    mult: 1.00 },
+      eu:   { label: 'EU',    mult: 0.85 },
+      latam:{ label: 'LATAM', mult: 0.65 },
+    },
+
+    // Roles (example data — replace with your own)
+    roles: [
+      { group: 'Engineering', roles: [
+        { title: 'Junior Engineer',  minCash: 130000, maxCash: 155000, eqMin: 0.05, eqMax: 0.15 },
+        { title: 'Mid Engineer',     minCash: 155000, maxCash: 185000, eqMin: 0.10, eqMax: 0.30 },
+        { title: 'Senior Engineer',  minCash: 185000, maxCash: 220000, eqMin: 0.20, eqMax: 0.50, default: true },
+        { title: 'Staff Engineer',   minCash: 220000, maxCash: 260000, eqMin: 0.30, eqMax: 0.80 },
+      ]},
+      { group: 'Product', roles: [
+        { title: 'Product Manager',  minCash: 140000, maxCash: 175000, eqMin: 0.10, eqMax: 0.30 },
+        { title: 'Senior PM',        minCash: 175000, maxCash: 210000, eqMin: 0.20, eqMax: 0.50 },
+      ]},
+      { group: 'Sales', roles: [
+        { title: 'Account Executive',    minCash: 95000,  maxCash: 125000, eqMin: 0.05, eqMax: 0.15 },
+        { title: 'Sr. Account Executive', minCash: 120000, maxCash: 150000, eqMin: 0.10, eqMax: 0.25 },
+      ]},
+      { group: 'Account Management', roles: [
+        { title: 'Account Manager',    minCash: 85000,  maxCash: 115000, eqMin: 0.03, eqMax: 0.10 },
+        { title: 'Sr. Account Manager', minCash: 110000, maxCash: 140000, eqMin: 0.05, eqMax: 0.15 },
+      ]},
+      { group: 'Marketing', roles: [
+        { title: 'Marketing Manager', minCash: 120000, maxCash: 150000, eqMin: 0.05, eqMax: 0.20 },
+        { title: 'Head of Growth',    minCash: 160000, maxCash: 200000, eqMin: 0.30, eqMax: 0.80 },
+      ]},
+      { group: 'Customer Support', roles: [
+        { title: 'Support Rep', minCash: 60000, maxCash: 80000, eqMin: 0.02, eqMax: 0.05 },
+        { title: 'Sr. Support',  minCash: 75000, maxCash: 95000, eqMin: 0.03, eqMax: 0.08 },
+      ]},
+      { group: 'Leadership', roles: [
+        { title: 'Director', minCash: 180000, maxCash: 240000, eqMin: 0.30, eqMax: 1.00 },
+        { title: 'VP',       minCash: 200000, maxCash: 280000, eqMin: 0.50, eqMax: 2.00 },
+      ]},
+    ],
+  };
+
+  // ============== APPLY BRANDING ==============
+  document.documentElement.style.setProperty('--accent', CONFIG.accentColor);
+  document.documentElement.style.setProperty('--accent-glow', CONFIG.accentGlow);
+  document.title = CONFIG.companyName + ' ' + CONFIG.productName;
+
+  // ============== RENDER DYNAMIC ELEMENTS ==============
+  const maxTrade = CONFIG.sliderMax - CONFIG.sliderMin;
+
+  // Populate role select
+  function buildRoleSelect() {
+    const sel = document.getElementById('aRole');
+    CONFIG.roles.forEach(group => {
+      const optgroup = document.createElement('optgroup');
+      optgroup.label = group.group;
+      group.roles.forEach(role => {
+        const opt = document.createElement('option');
+        opt.value = role.title;
+        opt.textContent = role.title;
+        opt.dataset.min = role.minCash;
+        opt.dataset.max = role.maxCash;
+        opt.dataset.eqMin = role.eqMin;
+        opt.dataset.eqMax = role.eqMax;
+        if (role.default) opt.selected = true;
+        optgroup.appendChild(opt);
+      });
+      sel.appendChild(optgroup);
+    });
+  }
+
+  // Populate region pills
+  function buildRegionPills() {
+    const container = document.getElementById('regionPills');
+    const regionKeys = Object.keys(CONFIG.regions);
+    regionKeys.forEach((key, i) => {
+      const r = CONFIG.regions[key];
+      const btn = document.createElement('button');
+      btn.dataset.region = key;
+      btn.onclick = function() { setAdminRegion(this); };
+      btn.textContent = r.mult < 1 ? `${r.label} (${r.mult}x)` : r.label;
+      if (i === 0) btn.classList.add('active');
+      container.appendChild(btn);
+    });
+  }
+
+  // Set slider attributes from CONFIG
+  function initSlider() {
+    const slider = document.getElementById('slider');
+    slider.min = CONFIG.sliderMin;
+    slider.max = CONFIG.sliderMax;
+    slider.value = CONFIG.sliderDefault;
+
+    const labels = document.getElementById('sliderLabels');
+    labels.innerHTML = `<span>${maxTrade}% salary trade / max equity</span><span>Full salary / base equity</span>`;
+  }
+
+  // Build year selector buttons from CONFIG.vestingYears
+  function buildYearSelector() {
+    const container = document.getElementById('yearSelector');
+    for (let y = 1; y <= CONFIG.vestingYears; y++) {
+      const btn = document.createElement('button');
+      btn.className = 'year-btn' + (y === 1 ? ' active' : '');
+      btn.textContent = 'Year ' + y;
+      btn.onclick = function() { setYear(y); };
+      container.appendChild(btn);
+    }
+  }
+
+  // Build vesting labels
+  function buildVestingLabels() {
+    const totalMonths = CONFIG.vestingYears * 12;
+    document.getElementById('vestingLabels').innerHTML =
+      `<span>Month 1</span><span>Month ${totalMonths}</span>`;
+  }
+
+  // Set logo text
+  function setLogos() {
+    document.getElementById('adminLogo').textContent = CONFIG.companyName;
+    document.getElementById('candidateLogo').textContent = CONFIG.companyName;
+  }
+
+  // Set equity type label in summary
+  function setEquityLabel() {
+    document.getElementById('sharesLabel').textContent = CONFIG.equityType + ' Shares';
+    document.getElementById('vestingYearLabel').textContent = CONFIG.vestingYears + '-Year Equity Value';
+  }
+
+  // Render "How It Works" section
+  function renderHowItWorks() {
+    const co = CONFIG.companyName;
+    const prod = CONFIG.productName;
+    const cliff = CONFIG.vestingCliff === 'None' ? 'no cliff' : CONFIG.vestingCliff + ' cliff';
+    document.getElementById('howItWorksContent').innerHTML =
+      `<p style="margin-bottom:12px"><strong style="color:var(--text)">Your offer includes a cash salary and an equity grant</strong> valued at the preferred share price. You can trade up to ${maxTrade}% of your salary for additional equity.</p>` +
+      `<p style="margin-bottom:12px"><strong style="color:var(--text)">Equity bonus.</strong> If you trade more than ${CONFIG.bonusThresholdPct}% of your salary for equity, you earn a ${Math.round(CONFIG.bonusRate * 100)}% bonus on the extra. For example, trading ${maxTrade}% means you get a bonus on that extra ${maxTrade - CONFIG.bonusThresholdPct}% above the ${CONFIG.bonusThresholdPct}% default.</p>` +
+      `<p style="margin-bottom:12px"><strong style="color:var(--text)">Vesting.</strong> Monthly over ${CONFIG.vestingYears} years, ${cliff}. You start earning equity from day one. If you leave, you have ${CONFIG.postTermExerciseWindow} to exercise.</p>` +
+      `<p><strong style="color:var(--text)">Twice a year</strong> (January and July), you can adjust your salary trade in either direction.</p>`;
+  }
+
+  // Render equity details legal section
+  function renderEquityDetails() {
+    const co = CONFIG.companyName;
+    const plan = co + ' ' + CONFIG.planName;
+    const totalMonths = CONFIG.vestingYears * 12;
+    const cliff = CONFIG.vestingCliff === 'None'
+      ? 'None — vesting begins on your first day of employment'
+      : CONFIG.vestingCliff;
+
+    document.getElementById('equityDetailsContent').innerHTML =
+      `<h3>Incentive Stock Options (${CONFIG.equityType})</h3>` +
+      `<p>Your equity grant is issued as Incentive Stock Options under the ${plan}, as approved by the Board of Directors. ${CONFIG.equityType} are the right to purchase shares of ${co} common stock at a fixed price (the "exercise price"), set at the fair market value on your grant date based on an independent 409A valuation.</p>` +
+
+      `<h3>How Your Equity is Valued</h3>` +
+      `<p>The equity values shown throughout this page — including your annual grant value, upside scenarios, and vesting amounts — are based on the preferred share price from ${co}'s most recent funding round. This is the price investors paid and represents the current market value of the company.</p>` +
+      `<p>Your exercise (strike) price is set separately at the 409A fair market value, which is independently appraised and typically lower than the preferred price. The difference between the preferred price and your strike price represents built-in value from day one.</p>` +
+
+      `<h3>Vesting Schedule</h3>` +
+      `<ul>` +
+        `<li><strong>Schedule:</strong> ${CONFIG.vestingYears} years, vesting monthly (1/${totalMonths}th per month)</li>` +
+        `<li><strong>Cliff:</strong> ${cliff}</li>` +
+        `<li><strong>Acceleration:</strong> Any acceleration provisions will be detailed in your option agreement</li>` +
+      `</ul>` +
+
+      `<h3>Exercise & Post-Departure</h3>` +
+      `<ul>` +
+        `<li><strong>Exercise price:</strong> Set at fair market value (409A valuation) on grant date</li>` +
+        `<li><strong>Post-termination exercise window:</strong> ${CONFIG.postTermExerciseWindow} from date of departure for vested options</li>` +
+        `<li><strong>Early exercise:</strong> Not available unless otherwise specified in your option agreement</li>` +
+      `</ul>` +
+
+      `<h3>Tax Considerations</h3>` +
+      `<p>${CONFIG.equityType} may qualify for favorable tax treatment under U.S. tax law. Key considerations:</p>` +
+      `<ul>` +
+        `<li><strong>No taxable event at grant or vesting.</strong> You are not taxed when options are granted or when they vest.</li>` +
+        `<li><strong>Exercise may trigger AMT.</strong> When you exercise ${CONFIG.equityType}, the difference between the exercise price and fair market value ("bargain element") may be subject to the Alternative Minimum Tax (AMT).</li>` +
+        `<li><strong>Qualifying disposition.</strong> If you hold shares for at least 1 year after exercise and 2 years after the grant date, gains are taxed at long-term capital gains rates.</li>` +
+        `<li><strong>Disqualifying disposition.</strong> Selling before meeting the holding periods converts the bargain element to ordinary income.</li>` +
+        `<li><strong>$100K annual limit.</strong> ${CONFIG.equityType} that become exercisable in excess of $100,000 (based on exercise price) in a single calendar year are automatically treated as Non-Qualified Stock Options (NSOs) for the excess amount.</li>` +
+      `</ul>` +
+      `<p><strong>Non-US employees:</strong> Equity grants for employees outside the United States will be structured as NSOs or a locally equivalent instrument. Tax treatment varies by jurisdiction. You will receive country-specific guidance with your offer letter.</p>` +
+      `<p style="color:var(--text);font-style:italic">${co} does not provide tax advice. We strongly recommend consulting a qualified tax advisor regarding your personal tax situation before making equity allocation decisions.</p>`;
+  }
+
+  // Render legal/important information section
+  function renderLegal() {
+    const co = CONFIG.companyName;
+    const prod = CONFIG.productName;
+    const plan = co + ' ' + CONFIG.planName;
+
+    document.getElementById('legalContent').innerHTML =
+      `<h3>Offer Status</h3>` +
+      `<p>This page is an illustrative tool to help you understand the ${co} ${prod} program. It is <strong>not</strong> a binding offer of employment, grant agreement, or contract. Your formal offer, including all compensation details, will be provided in a written offer letter and option agreement, each of which will govern in the event of any discrepancy with the figures shown here.</p>` +
+
+      `<h3>Equity Grant Approval</h3>` +
+      `<p>All equity grants are subject to approval by the ${co} Board of Directors (or its designated committee) and the terms of the ${plan}. The number of shares, exercise price, and vesting terms will be set forth in an individual option agreement provided at or after your start date.</p>` +
+
+      `<h3>Valuation & Projections</h3>` +
+      `<p>Equity values are based on the preferred share price from ${co}'s most recent funding round. The "Equity Upside Scenarios" show hypothetical multiples of this value and are illustrations only. They are <strong>not</strong> projections, forecasts, or guarantees of future value. Stock options in a private company carry inherent risk, including the possibility that they may never become liquid or may become worthless. Past performance and current valuation do not guarantee future results.</p>` +
+
+      `<h3>At-Will Employment</h3>` +
+      `<p>Employment with ${co} is at-will, meaning either you or ${co} may terminate the employment relationship at any time, with or without cause, and with or without notice. Nothing in this tool or the ${prod} program modifies the at-will nature of employment.</p>` +
+
+      `<h3>Allocation Changes</h3>` +
+      `<p>Cash/equity allocation adjustments are available twice per year (January and July). Changes apply prospectively to future compensation only and do not affect previously vested equity or prior cash payments. ${co} reserves the right to modify or discontinue the ${prod} program at any time, with reasonable notice to participants.</p>` +
+
+      `<h3>Confidentiality</h3>` +
+      `<p>The compensation information presented here is confidential and intended solely for the named recipient. Please do not share, forward, or distribute this link. Compensation details, equity percentages, and company valuation information are proprietary to ${co}.</p>` +
+
+      `<h3>Governing Documents</h3>` +
+      `<p>In all cases, the terms of your signed offer letter, option agreement, and the ${plan} will take precedence over any information displayed in this tool.</p>`;
+  }
+
+  // Render footer
+  function renderFooter() {
+    const co = CONFIG.companyName;
+    const prod = CONFIG.productName;
+    const plan = co + ' ' + CONFIG.planName;
+    const totalMonths = CONFIG.vestingYears * 12;
+
+    document.getElementById('footerTitle').textContent = co + ' ' + prod;
+    document.getElementById('footerTerms').textContent =
+      `This page is for informational purposes only and does not constitute a binding offer of employment or equity grant. All compensation is subject to your signed offer letter, individual option agreement, and the ${plan}. Equity values based on preferred share price from most recent funding round. Exercise price set at independent 409A valuation. Actual future value may differ materially. ${CONFIG.equityType} vest monthly over ${CONFIG.vestingYears} years with ${CONFIG.vestingCliff === 'None' ? 'no' : CONFIG.vestingCliff} cliff. ${CONFIG.postTermExerciseWindow} post-departure exercise window. Consult a qualified tax advisor before making equity allocation decisions.`;
+  }
+
+  // Render upside scenario subtitles
+  function renderScenarioSubs() {
+    document.getElementById('sub5x').textContent = `if ${CONFIG.companyName} grows 5x`;
+    document.getElementById('sub10x').textContent = `if ${CONFIG.companyName} grows 10x`;
+  }
+
+  // Render bonus detail default text
+  function renderBonusDefault() {
+    document.getElementById('sumBonusDetail').textContent =
+      `Trade >${CONFIG.bonusThresholdPct}% of salary to earn a ${Math.round(CONFIG.bonusRate * 100)}% bonus`;
+  }
+
+  // ============== ROUTING ==============
+  const params = new URLSearchParams(window.location.search);
+  const isCandidate = params.has('c'); // has comp = candidate mode
+
+  // ============== ADMIN MODE ==============
+  let adminRegion = Object.keys(CONFIG.regions)[0];
+
+  function setAdminRegion(btn) {
+    adminRegion = btn.dataset.region;
+    document.querySelectorAll('.admin-region-pills button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    onAdminRoleChange();
+  }
+
+  function onAdminRoleChange() {
+    const sel = document.getElementById('aRole');
+    const opt = sel.options[sel.selectedIndex];
+    const mult = CONFIG.regions[adminRegion].mult;
+    const min = Math.round(parseInt(opt.dataset.min) * mult);
+    const max = Math.round(parseInt(opt.dataset.max) * mult);
+    const eqMin = parseFloat(opt.dataset.eqMin);
+    const eqMax = parseFloat(opt.dataset.eqMax);
+    const mid = Math.round((min + max) / 2 / 5000) * 5000;
+
+    document.getElementById('aCash').value = mid.toLocaleString('en-US');
+    document.getElementById('adminCompRange').textContent =
+      `Cash: $${Math.round(min/1000)}K–$${Math.round(max/1000)}K · Equity: ${eqMin.toFixed(2)}–${eqMax.toFixed(2)}%`;
+
+    const eqMid = ((eqMin + eqMax) / 2).toFixed(2);
+    document.getElementById('aEqPct').value = eqMid;
+    updateAdminComputed();
+  }
+
+  function formatAdminCash() {
+    const input = document.getElementById('aCash');
+    const raw = input.value.replace(/[^0-9]/g, '');
+    if (raw) {
+      const pos = input.selectionStart;
+      const oldLen = input.value.length;
+      input.value = parseInt(raw).toLocaleString('en-US');
+      const newLen = input.value.length;
+      input.setSelectionRange(pos + (newLen - oldLen), pos + (newLen - oldLen));
+    }
+  }
+
+  function formatAdminShares() {
+    const input = document.getElementById('aTotalShares');
+    const raw = input.value.replace(/[^0-9]/g, '');
+    if (raw) {
+      const pos = input.selectionStart;
+      const oldLen = input.value.length;
+      input.value = parseInt(raw).toLocaleString('en-US');
+      const newLen = input.value.length;
+      input.setSelectionRange(pos + (newLen - oldLen), pos + (newLen - oldLen));
+    }
+  }
+
+  function updateAdminComputed() {
+    const cash = parseInt((document.getElementById('aCash').value || '').replace(/[^0-9]/g, '')) || 0;
+    const pps = parseFloat(document.getElementById('aPPS').value) || 0;
+    const total = parseInt((document.getElementById('aTotalShares').value || '').replace(/[^0-9]/g, '')) || 0;
+    const eqPct = parseFloat(document.getElementById('aEqPct').value) || 0;
+
+    const shareCount = Math.round(total * (eqPct / 100));
+    document.getElementById('aEqShares').value = shareCount > 0 ? shareCount.toLocaleString('en-US') : '';
+
+    const el = document.getElementById('adminGrantSummary');
+    if (pps > 0 && shareCount > 0 && cash > 0) {
+      const grantValue = shareCount * pps;
+      const annualEq = grantValue / CONFIG.vestingYears;
+      const totalComp = cash + annualEq;
+      el.innerHTML =
+        `${shareCount.toLocaleString('en-US')} shares × $${pps.toFixed(2)} = $${Math.round(grantValue).toLocaleString('en-US')} (${CONFIG.vestingYears}-yr) · $${Math.round(annualEq).toLocaleString('en-US')}/yr<br>` +
+        `Total comp at default: $${Math.round(totalComp).toLocaleString('en-US')}`;
+    } else {
+      el.innerHTML = '';
+    }
+  }
+
+  function generateLink() {
+    const name = document.getElementById('aName').value.trim();
+    const role = document.getElementById('aRole').value;
+    const cash = document.getElementById('aCash').value.replace(/[^0-9]/g, '');
+    const eqPct = document.getElementById('aEqPct').value.trim();
+    const pps = document.getElementById('aPPS').value.trim();
+    const totalShares = document.getElementById('aTotalShares').value.replace(/[^0-9]/g, '');
+
+    if (!cash || !eqPct) {
+      alert('Cash salary and equity % are required.');
+      return;
+    }
+
+    const u = new URLSearchParams();
+    if (name) u.set('n', name);
+    u.set('r', role);
+    u.set('c', cash);
+    u.set('g', adminRegion);
+    u.set('e', eqPct);
+    if (pps) u.set('p', pps);
+    if (totalShares) u.set('d', totalShares);
+
+    // Persist valuation fields
+    if (pps) localStorage.setItem('flexcomp_pps', pps);
+    if (totalShares) localStorage.setItem('flexcomp_totalShares', totalShares);
+
+    const base = window.location.origin + window.location.pathname;
+    const url = base + '?' + u.toString();
+
+    document.getElementById('linkUrl').textContent = url;
+    document.getElementById('linkOutput').classList.add('visible');
+    document.getElementById('copyBtn').textContent = 'Copy';
+    document.getElementById('copyBtn').classList.remove('copied');
+  }
+
+  function copyLink() {
+    const url = document.getElementById('linkUrl').textContent;
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function previewLink() {
+    const url = document.getElementById('linkUrl').textContent;
+    window.open(url, '_blank');
+  }
+
+  // ============== CANDIDATE MODE ==============
+  let cashSalary, equityPct, preferredPrice, totalSharesOutstanding;
+  let cashPctOfSalary = CONFIG.sliderDefault, selectedYear = 1;
+  let hasValuation = false;
+  let baseEqAnnual = 0, baseShares = 0;
+
+  function fmt(n) {
+    return '$' + Math.round(n).toLocaleString('en-US');
+  }
+
+  function onSliderChange() {
+    cashPctOfSalary = parseInt(document.getElementById('slider').value);
+    updateCandidate();
+  }
+
+  function setYear(y) {
+    selectedYear = y;
+    document.querySelectorAll('.year-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', i + 1 === y);
+    });
+    updateCandidate();
+  }
+
+  function updateCandidate() {
+    const actualCash = cashSalary * (cashPctOfSalary / 100);
+    const cashTraded = cashSalary - actualCash;
+    const tradePercent = 100 - cashPctOfSalary;
+    const extraAboveThreshold = Math.max(0, tradePercent - CONFIG.bonusThresholdPct);
+    const bonusBasis = cashSalary * (extraAboveThreshold / 100);
+    const bonusAmt = bonusBasis * CONFIG.bonusRate;
+    const additionalEq = cashTraded + bonusAmt;
+    const totalAnnualEq = baseEqAnnual + additionalEq;
+    const totalAnnualComp = actualCash + totalAnnualEq;
+
+    // Slider visuals
+    const sliderRange = CONFIG.sliderMax - CONFIG.sliderMin;
+    const sliderNorm = (cashPctOfSalary - CONFIG.sliderMin) / sliderRange;
+    document.getElementById('fillCash').style.width = (sliderNorm * 100) + '%';
+    document.getElementById('fillEquity').style.width = ((1 - sliderNorm) * 100) + '%';
+
+    // Text
+    document.getElementById('cashPct').textContent = cashPctOfSalary + '%';
+    document.getElementById('eqPct').textContent = tradePercent + '%';
+    document.getElementById('cashAmt').textContent = fmt(actualCash);
+    document.getElementById('eqAmt').textContent = fmt(totalAnnualEq);
+
+    // Bonus badge
+    const badge = document.getElementById('bonusBadge');
+    if (bonusAmt > 0) {
+      badge.classList.add('visible');
+      document.getElementById('bonusText').textContent = '+' + fmt(bonusAmt) + ' equity bonus';
+    } else {
+      badge.classList.remove('visible');
+    }
+
+    // Equity upside scenarios
+    document.getElementById('s1x').textContent = fmt(totalAnnualEq);
+    document.getElementById('s5x').textContent = fmt(totalAnnualEq * 5);
+    document.getElementById('s10x').textContent = fmt(totalAnnualEq * 10);
+
+    function yearRows(containerId, multiplier) {
+      let html = '';
+      for (let y = 1; y <= CONFIG.vestingYears; y++) {
+        const vested = totalAnnualEq * y * multiplier;
+        html += `<div class="year-row"><span>Year ${y}</span><span class="yr-val">${fmt(vested)}</span></div>`;
+      }
+      document.getElementById(containerId).innerHTML = html;
+    }
+    yearRows('rows1x', 1);
+    yearRows('rows5x', 5);
+    yearRows('rows10x', 10);
+
+    // Vesting
+    const totalMonths = CONFIG.vestingYears * 12;
+    const vestedMonths = selectedYear * 12;
+    let barHTML = '';
+    for (let m = 1; m <= totalMonths; m++) {
+      barHTML += `<div class="vesting-segment${m <= vestedMonths ? ' filled' : ''}"></div>`;
+    }
+    document.getElementById('vestingBar').innerHTML = barHTML;
+
+    const fullTermEq = totalAnnualEq * CONFIG.vestingYears;
+    const vestedAmt = totalAnnualEq * selectedYear;
+    const monthlyAmt = totalAnnualEq / 12;
+    const remaining = fullTermEq - vestedAmt;
+
+    document.getElementById('vestedAmt').textContent = fmt(vestedAmt);
+    document.getElementById('monthlyVest').textContent = fmt(monthlyAmt);
+    document.getElementById('remainingAmt').textContent = fmt(remaining);
+
+    // Summary
+    document.getElementById('sumCash').textContent = fmt(actualCash);
+    document.getElementById('sumEquity').textContent = fmt(totalAnnualEq);
+
+    if (hasValuation) {
+      document.getElementById('sumEqDetail').textContent =
+        `${equityPct}% · ${baseShares.toLocaleString('en-US')} shares at $${preferredPrice.toFixed(2)}/share`;
+      document.getElementById('ppsRow').style.display = '';
+      document.getElementById('sumPPS').textContent = '$' + preferredPrice.toFixed(2);
+      document.getElementById('sharesRow').style.display = '';
+      document.getElementById('sumShares').textContent = baseShares.toLocaleString('en-US');
+    } else {
+      document.getElementById('sumEqDetail').textContent = tradePercent > 0 ? `${equityPct}% of company` : 'No equity selected';
+    }
+
+    const bonusRatePct = Math.round(CONFIG.bonusRate * 100);
+    document.getElementById('sumBonus').textContent = bonusAmt > 0 ? '+' + fmt(bonusAmt) : '$0';
+    document.getElementById('sumBonusDetail').textContent = bonusAmt > 0
+      ? `${bonusRatePct}% bonus on ${extraAboveThreshold}% of salary above ${CONFIG.bonusThresholdPct}% trade`
+      : `Trade >${CONFIG.bonusThresholdPct}% of salary to earn a ${bonusRatePct}% bonus`;
+    document.getElementById('sum4yr').textContent = fmt(fullTermEq);
+    document.getElementById('sumTotal').textContent = fmt(totalAnnualComp);
+  }
+
+  // ============== INIT ==============
+  // Build dynamic elements (needed for both modes)
+  setLogos();
+  buildRoleSelect();
+  buildRegionPills();
+
+  if (isCandidate) {
+    document.getElementById('adminView').style.display = 'none';
+    document.getElementById('candidateView').style.display = '';
+
+    // Init candidate-only dynamic content
+    initSlider();
+    buildYearSelector();
+    buildVestingLabels();
+    setEquityLabel();
+    renderHowItWorks();
+    renderEquityDetails();
+    renderLegal();
+    renderFooter();
+    renderScenarioSubs();
+    renderBonusDefault();
+
+    const name = params.get('n') || '';
+    const role = params.get('r') || '';
+    const region = params.get('g') || Object.keys(CONFIG.regions)[0];
+    cashSalary = parseInt(params.get('c')) || 0;
+    equityPct = parseFloat(params.get('e')) || 0;
+    preferredPrice = parseFloat(params.get('p')) || 0;
+    totalSharesOutstanding = parseInt(params.get('d')) || 0;
+
+    hasValuation = preferredPrice > 0 && totalSharesOutstanding > 0;
+    if (hasValuation) {
+      baseShares = Math.round(totalSharesOutstanding * (equityPct / 100));
+      baseEqAnnual = (baseShares * preferredPrice) / CONFIG.vestingYears;
+    }
+
+    if (name) {
+      document.getElementById('candidateHeading').textContent = `${name}, welcome to ${CONFIG.productName}`;
+      document.title = `${CONFIG.companyName} ${CONFIG.productName} — ${name}`;
+    }
+    document.getElementById('offerRole').textContent = role;
+    document.getElementById('offerRegion').textContent = CONFIG.regions[region] ? CONFIG.regions[region].label : region.toUpperCase();
+
+    updateCandidate();
+  } else {
+    document.getElementById('adminView').style.display = '';
+    document.getElementById('candidateView').style.display = 'none';
+
+    // Restore localStorage values
+    const savedPPS = localStorage.getItem('flexcomp_pps');
+    const savedShares = localStorage.getItem('flexcomp_totalShares');
+    if (savedPPS) document.getElementById('aPPS').value = savedPPS;
+    if (savedShares) document.getElementById('aTotalShares').value = parseInt(savedShares).toLocaleString('en-US');
+
+    onAdminRoleChange();
+  }
+</script>
+
+</body>
+</html>
