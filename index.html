@@ -1008,7 +1008,7 @@
           <div class="vesting-stat-value" id="vestedAmt">$10,000</div>
         </div>
         <div class="vesting-stat">
-          <div class="vesting-stat-label">Monthly</div>
+          <div class="vesting-stat-label">Quarterly</div>
           <div class="vesting-stat-value" id="monthlyVest">$833</div>
         </div>
         <div class="vesting-stat">
@@ -1061,7 +1061,7 @@
     planName: 'Equity Incentive Plan',
     equityType: 'ISOs',  // ISOs or NSOs
     vestingYears: 4,
-    vestingCliff: 'None',
+    vestingCliff: '1 year',
     postTermExerciseWindow: '10 years',
 
     // Equity bonus (flat % on equity allocation)
@@ -1205,9 +1205,9 @@
 
   // Build vesting labels
   function buildVestingLabels() {
-    const totalMonths = CONFIG.vestingYears * 12;
+    const totalQuarters = CONFIG.vestingYears * 4;
     document.getElementById('vestingLabels').innerHTML =
-      `<span>Month 1</span><span>Month ${totalMonths}</span>`;
+      `<span>Q1</span><span>Q${totalQuarters}</span>`;
   }
 
   // Set logo text
@@ -1225,7 +1225,7 @@
     document.getElementById('howItWorksContent').innerHTML =
       `<p style="margin-bottom:12px"><strong style="color:var(--text)">Your offer includes a cash salary and a stock option grant</strong> valued at the preferred share price. You can adjust the split between cash and equity — all the way from 100% cash to 100% stock options.</p>` +
       `<p style="margin-bottom:12px"><strong style="color:var(--text)">Equity bonus.</strong> You earn a +${bonusPct}% bonus on your stock options allocation. The more equity you choose, the larger the bonus.</p>` +
-      `<p style="margin-bottom:12px"><strong style="color:var(--text)">Vesting.</strong> Monthly over ${CONFIG.vestingYears} years, ${cliff}. You start earning equity from day one. If you leave, you have ${CONFIG.postTermExerciseWindow} to exercise.</p>` +
+      `<p style="margin-bottom:12px"><strong style="color:var(--text)">Vesting.</strong> Quarterly over ${CONFIG.vestingYears} years, ${cliff}. If you leave, you have ${CONFIG.postTermExerciseWindow} to exercise.</p>` +
       `<p><strong style="color:var(--text)">${CONFIG.electionNote}</strong></p>`;
   }
 
@@ -1236,7 +1236,7 @@
     const totalMonths = CONFIG.vestingYears * 12;
     const cliff = CONFIG.vestingCliff === 'None'
       ? 'None — vesting begins on your first day of employment'
-      : CONFIG.vestingCliff;
+      : CONFIG.vestingCliff + ' — no shares vest until the cliff date, then all shares earned through the cliff vest at once';
 
     document.getElementById('equityDetailsContent').innerHTML =
       `<h3>Incentive Stock Options (${CONFIG.equityType})</h3>` +
@@ -1248,7 +1248,7 @@
 
       `<h3>Vesting Schedule</h3>` +
       `<ul>` +
-        `<li><strong>Schedule:</strong> ${CONFIG.vestingYears} years, vesting monthly (1/${totalMonths}th per month)</li>` +
+        `<li><strong>Schedule:</strong> ${CONFIG.vestingYears} years, vesting quarterly (1/${CONFIG.vestingYears * 4}th per quarter)</li>` +
         `<li><strong>Cliff:</strong> ${cliff}</li>` +
         `<li><strong>Acceleration:</strong> Any acceleration provisions will be detailed in your option agreement</li>` +
       `</ul>` +
@@ -1310,7 +1310,7 @@
 
     document.getElementById('footerTitle').textContent = co + ' ' + prod;
     document.getElementById('footerTerms').textContent =
-      `This page is for informational purposes only and does not constitute a binding offer of employment or equity grant. All compensation is subject to your signed offer letter, individual option agreement, and the ${plan}. Equity values based on preferred share price from most recent funding round. Exercise price set at independent 409A valuation. Actual future value may differ materially. ${CONFIG.equityType} vest monthly over ${CONFIG.vestingYears} years with ${CONFIG.vestingCliff === 'None' ? 'no' : CONFIG.vestingCliff} cliff. ${CONFIG.postTermExerciseWindow} post-departure exercise window. Consult a qualified tax advisor before making equity allocation decisions.`;
+      `This page is for informational purposes only and does not constitute a binding offer of employment or equity grant. All compensation is subject to your signed offer letter, individual option agreement, and the ${plan}. Equity values based on preferred share price from most recent funding round. Exercise price set at independent 409A valuation. Actual future value may differ materially. ${CONFIG.equityType} vest quarterly over ${CONFIG.vestingYears} years with ${CONFIG.vestingCliff === 'None' ? 'no' : CONFIG.vestingCliff} cliff. ${CONFIG.postTermExerciseWindow} post-departure exercise window. Consult a qualified tax advisor before making equity allocation decisions.`;
   }
 
   // Render upside scenario subtitles
@@ -1653,21 +1653,21 @@
     yearRows('rows10x', 10);
 
     // --- Vesting ---
-    const totalMonths = CONFIG.vestingYears * 12;
-    const vestedMonths = selectedYear * 12;
+    const totalQuarters = CONFIG.vestingYears * 4;
+    const vestedQuarters = selectedYear * 4;
     let barHTML = '';
-    for (let m = 1; m <= totalMonths; m++) {
-      barHTML += `<div class="vesting-segment${m <= vestedMonths ? ' filled' : ''}"></div>`;
+    for (let q = 1; q <= totalQuarters; q++) {
+      barHTML += `<div class="vesting-segment${q <= vestedQuarters ? ' filled' : ''}"></div>`;
     }
     document.getElementById('vestingBar').innerHTML = barHTML;
 
     const fullTermEq = totalAnnualEq * CONFIG.vestingYears;
     const vestedAmt = totalAnnualEq * selectedYear;
-    const monthlyAmt = totalAnnualEq / 12;
+    const quarterlyAmt = totalAnnualEq / 4;
     const remaining = fullTermEq - vestedAmt;
 
     document.getElementById('vestedAmt').textContent = fmt(vestedAmt);
-    document.getElementById('monthlyVest').textContent = fmt(monthlyAmt);
+    document.getElementById('monthlyVest').textContent = fmt(quarterlyAmt);
     document.getElementById('remainingAmt').textContent = fmt(remaining);
 
     // --- Take-home calculator ---
